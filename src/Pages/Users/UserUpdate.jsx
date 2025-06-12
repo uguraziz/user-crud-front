@@ -1,6 +1,8 @@
 import React, { useState, useContext, useEffect } from "react";
 import { AppContext } from "../../Context/AppContext";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import API_BASE_URL from "../../utils/api";
+
 
 export default function UserUpdate() {
   const { token } = useContext(AppContext);
@@ -35,7 +37,7 @@ export default function UserUpdate() {
 
   const fetchUser = async () => {
     try {
-      const res = await fetch(`/api/users/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/users/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -95,7 +97,7 @@ export default function UserUpdate() {
     setErrors({});
 
     try {
-      const res = await fetch(`/api/users/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/users/${id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,

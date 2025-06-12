@@ -1,6 +1,7 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AppContext } from "../Context/AppContext";
+import API_BASE_URL from "../utils/api";
 
 export default function Layout() {
   const { user, token, setUser, setToken } = useContext(AppContext);
@@ -8,7 +9,7 @@ export default function Layout() {
 
   async function handleLogout(e) {
     e.preventDefault();
-    const res = await fetch("/api/logout", {
+    const res = await fetch(`${API_BASE_URL}/logout`, {
       method: "post",
       headers: {
         Authorization: `Bearer ${token}`,

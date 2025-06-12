@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "../../Context/AppContext";
+import API_BASE_URL from "../../utils/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ export default function Login() {
     e.preventDefault();
     setErrors({});
 
-    const res = await fetch("api/login", {
+    const res = await fetch(`${API_BASE_URL}/login`, {
       method: "post",
       body: JSON.stringify(formData),
     });
@@ -43,7 +44,7 @@ export default function Login() {
     e.preventDefault();
     setErrors({});
 
-    const res = await fetch("/api/verify-2fa", {
+    const res = await fetch(`${API_BASE_URL}/verify-2fa`, {
       method: "post",
       body: JSON.stringify({
         code: code,

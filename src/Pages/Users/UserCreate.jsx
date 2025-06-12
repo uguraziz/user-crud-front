@@ -1,6 +1,7 @@
 import React, { useState, useContext } from "react";
 import { AppContext } from "../../Context/AppContext";
 import { Link, useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../utils/api";
 
 export default function UserCreate() {
   const { token } = useContext(AppContext);
@@ -48,7 +49,7 @@ export default function UserCreate() {
     setErrors({});
 
     try {
-      const res = await fetch("/api/users", {
+      const res = await fetch(`${API_BASE_URL}/users`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

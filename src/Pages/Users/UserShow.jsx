@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppContext } from "../../Context/AppContext";
+import API_BASE_URL from "../../utils/api";
 
 export default function UserShow() {
   const { token } = useContext(AppContext);
@@ -10,7 +11,7 @@ export default function UserShow() {
   const [notFound, setNotFound] = useState(false);
 
   async function getUser() {
-    const res = await fetch(`/api/users/${id}`, {
+    const res = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -35,7 +36,7 @@ export default function UserShow() {
       return;
     }
 
-    const res = await fetch(`/api/users/${id}`, {
+    const res = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

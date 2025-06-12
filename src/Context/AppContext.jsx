@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from "react";
+import API_BASE_URL from '../utils/api';
 
 export const AppContext = createContext();
 
@@ -8,7 +9,7 @@ export default function AppProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   async function getUser() {
-    const res = await fetch("/api/user", {
+    const res = await fetch(`${API_BASE_URL}/user`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

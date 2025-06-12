@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { AppContext } from "../../Context/AppContext";
 import { Link, useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../utils/api";
 
 export default function Users() {
   const { token } = useContext(AppContext);
@@ -16,7 +17,7 @@ export default function Users() {
   }, [currentPage, searchTerm]);
 
   const fetchUsers = async () => {
-    let url = `/api/users?page=${currentPage}`;
+    let url = `${API_BASE_URL}/users?page=${currentPage}`;
     if (searchTerm) {
       url += `&filter[search]=${encodeURIComponent(searchTerm)}`;
     }
@@ -42,7 +43,7 @@ export default function Users() {
       return;
     }
 
-    const res = await fetch(`/api/users/${userId}`, {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
