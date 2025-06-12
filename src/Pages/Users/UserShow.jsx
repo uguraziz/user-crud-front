@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { AppContext } from "../../Context/AppContext";
-import API_BASE_URL from "../../utils/api.js";
+import API_BASE_URL from "../../Utils/api.js";
 
 export default function UserShow() {
   const { token } = useContext(AppContext);

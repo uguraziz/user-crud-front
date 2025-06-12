@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AppContext } from "../../Context/AppContext";
-import API_BASE_URL from "../../utils/api.js";
+import API_BASE_URL from "../../Utils/api.js";
 
 export default function Login() {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import { createContext, useEffect, useState } from "react";
-import API_BASE_URL from '../utils/api.js';
+import API_BASE_URL from '../Utils/api.js';
 
 export const AppContext = createContext();
 
