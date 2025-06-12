@@ -12,7 +12,18 @@ import UserCreate from "./Pages/Users/UserCreate";
 import UserUpdate from "./Pages/Users/UserUpdate";
 
 export default function App() {
-  const { user } = useContext(AppContext);
+  const { user, loading } = useContext(AppContext);
+
+  if (loading) {
+    return (
+      <div className="preloader flex-column justify-content-center align-items-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="sr-only">Loading...</span>
+        </div>
+        <p className="mt-3">Yükleniyor...</p>
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
