@@ -23,6 +23,10 @@ export default function Login() {
 
     const res = await fetch(`${API_BASE_URL}/login`, {
       method: "post",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
       body: JSON.stringify(formData),
     });
 
@@ -46,6 +50,10 @@ export default function Login() {
 
     const res = await fetch(`${API_BASE_URL}/verify-2fa`, {
       method: "post",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
       body: JSON.stringify({
         code: code,
       }),

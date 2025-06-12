@@ -40,6 +40,8 @@ export default function UserUpdate() {
       const res = await fetch(`${API_BASE_URL}/users/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
       });
 
@@ -102,6 +104,7 @@ export default function UserUpdate() {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify(formData),
       });

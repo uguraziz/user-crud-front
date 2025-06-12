@@ -25,6 +25,8 @@ export default function Users() {
     const res = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
     });
     const data = await res.json();
@@ -47,6 +49,8 @@ export default function Users() {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
     });
 

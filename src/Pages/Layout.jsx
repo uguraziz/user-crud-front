@@ -13,6 +13,8 @@ export default function Layout() {
       method: "post",
       headers: {
         Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
       },
     });
 
