@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { AppContext } from "../../Context/AppContext";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import API_BASE_URL from "../../utils/api";
+import API_BASE_URL from "../../utils/api.js";
 
 
 export default function UserUpdate() {

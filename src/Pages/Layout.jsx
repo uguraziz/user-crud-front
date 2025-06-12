@@ -1,7 +1,7 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { AppContext } from "../Context/AppContext";
-import API_BASE_URL from "../utils/api";
+import API_BASE_URL from "../utils/api.js";
 
 export default function Layout() {
   const { user, token, setUser, setToken } = useContext(AppContext);
