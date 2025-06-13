@@ -7,32 +7,40 @@ export default function Users() {
   const { token } = useContext(AppContext);
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [searchFilters, setSearchFilters] = useState({
+
+  const [inputFilters, setInputFilters] = useState({
     first_name: "",
     last_name: "",
     email: "",
     phone: "",
     country: "",
-    gender: "",
+    gender: ""
   });
-  const [totalUsers, setTotalUsers] = useState(null); // null ilk başta
+  const [searchFilters, setSearchFilters] = useState(inputFilters);
+
+  const [totalUsers, setTotalUsers] = useState(null);
   const perPage = 20;
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchUsers(currentPage);
+      setSearchFilters(inputFilters);
+      setCurrentPage(1);
     }, 500);
     return () => clearTimeout(timer);
+  }, [inputFilters]);
+
+  useEffect(() => {
+    fetchUsers(currentPage, searchFilters);
   }, [currentPage, searchFilters]);
 
   useEffect(() => {
     fetchCount();
   }, [token]);
 
-  const fetchUsers = async (page) => {
+  const fetchUsers = async (page, filters = searchFilters) => {
     let url = `${API_BASE_URL}/users?page=${page}&per_page=${perPage}`;
-    Object.keys(searchFilters).forEach((key) => {
-      const value = searchFilters[key];
+    Object.keys(filters).forEach((key) => {
+      const value = filters[key];
       if (value && value.trim() !== "") {
         url += `&filter[${key}]=${encodeURIComponent(value.trim())}`;
       }
@@ -66,11 +74,10 @@ export default function Users() {
   };
 
   const handleFilterChange = (field, value) => {
-    setSearchFilters((prev) => ({
+    setInputFilters((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: value
     }));
-    setCurrentPage(1);
   };
 
   const handlePageChange = (page) => {
@@ -93,14 +100,14 @@ export default function Users() {
     });
 
     if (res.ok) {
-      fetchUsers(currentPage).then(() => fetchCount());
+      fetchUsers(currentPage, searchFilters);
+      fetchCount(); // sadece silme işleminden sonra!
     } else {
       const errorData = await res.json();
       alert(`Error deleting user: ${errorData.message || "Unknown error"}`);
     }
   }
 
-  // Sayfa numarası hesaplama
   const totalPages = totalUsers ? Math.ceil(totalUsers / perPage) : 1;
   const from = (currentPage - 1) * perPage + 1;
   const to = Math.min(currentPage * perPage, totalUsers || 0);
@@ -130,7 +137,6 @@ export default function Users() {
           </div>
         </div>
 
-        {/* 6 filtre inputu */}
         <div className="card-body border-bottom">
           <div className="row">
             <div className="col-md-2">
@@ -140,10 +146,8 @@ export default function Users() {
                   type="text"
                   className="form-control form-control-sm"
                   placeholder="First name"
-                  value={searchFilters.first_name}
-                  onChange={(e) =>
-                    handleFilterChange("first_name", e.target.value)
-                  }
+                  value={inputFilters.first_name}
+                  onChange={(e) => handleFilterChange("first_name", e.target.value)}
                 />
               </div>
             </div>
@@ -154,10 +158,8 @@ export default function Users() {
                   type="text"
                   className="form-control form-control-sm"
                   placeholder="Last name"
-                  value={searchFilters.last_name}
-                  onChange={(e) =>
-                    handleFilterChange("last_name", e.target.value)
-                  }
+                  value={inputFilters.last_name}
+                  onChange={(e) => handleFilterChange("last_name", e.target.value)}
                 />
               </div>
             </div>
@@ -168,7 +170,7 @@ export default function Users() {
                   type="text"
                   className="form-control form-control-sm"
                   placeholder="Email"
-                  value={searchFilters.email}
+                  value={inputFilters.email}
                   onChange={(e) => handleFilterChange("email", e.target.value)}
                 />
               </div>
@@ -180,7 +182,7 @@ export default function Users() {
                   type="text"
                   className="form-control form-control-sm"
                   placeholder="Phone"
-                  value={searchFilters.phone}
+                  value={inputFilters.phone}
                   onChange={(e) => handleFilterChange("phone", e.target.value)}
                 />
               </div>
@@ -192,10 +194,8 @@ export default function Users() {
                   type="text"
                   className="form-control form-control-sm"
                   placeholder="Country"
-                  value={searchFilters.country}
-                  onChange={(e) =>
-                    handleFilterChange("country", e.target.value)
-                  }
+                  value={inputFilters.country}
+                  onChange={(e) => handleFilterChange("country", e.target.value)}
                 />
               </div>
             </div>
@@ -204,7 +204,7 @@ export default function Users() {
                 <label className="form-label small">Gender</label>
                 <select
                   className="form-control form-control-sm"
-                  value={searchFilters.gender}
+                  value={inputFilters.gender}
                   onChange={(e) => handleFilterChange("gender", e.target.value)}
                 >
                   <option value="">All</option>
@@ -235,7 +235,7 @@ export default function Users() {
                 {users.length > 0 ? (
                   users.map((user, index) => (
                     <tr key={user.id}>
-                      <td>{(currentPage - 1) * perPage + 1 + index}</td>
+                      <td>{from + index}</td>
                       <td>
                         <strong>{user.first_name}</strong>
                       </td>
@@ -313,7 +313,6 @@ export default function Users() {
           </div>
         </div>
 
-        {/* Sayfalama */}
         {totalUsers !== null && totalUsers > perPage && (
           <div className="card-footer">
             <div className="d-flex justify-content-between align-items-center">
@@ -321,9 +320,7 @@ export default function Users() {
                 Showing {from} to {to} of {totalUsers} entries
               </div>
               <ul className="pagination pagination-sm m-0">
-                <li
-                  className={`page-item${currentPage === 1 ? " disabled" : ""}`}
-                >
+                <li className={`page-item${currentPage === 1 ? " disabled" : ""}`}>
                   <button
                     className="page-link"
                     onClick={() => handlePageChange(currentPage - 1)}
@@ -345,24 +342,15 @@ export default function Users() {
                   return (
                     <li
                       key={page}
-                      className={`page-item${
-                        currentPage === page ? " active" : ""
-                      }`}
+                      className={`page-item${currentPage === page ? " active" : ""}`}
                     >
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(page)}
-                      >
+                      <button className="page-link" onClick={() => handlePageChange(page)}>
                         {page}
                       </button>
                     </li>
                   );
                 })}
-                <li
-                  className={`page-item${
-                    currentPage === totalPages ? " disabled" : ""
-                  }`}
-                >
+                <li className={`page-item${currentPage === totalPages ? " disabled" : ""}`}>
                   <button
                     className="page-link"
                     onClick={() => handlePageChange(currentPage + 1)}
