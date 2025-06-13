@@ -7,25 +7,30 @@ export default function Users() {
   const { token } = useContext(AppContext);
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState({});
-
-  // filtre inputları için state
   const [searchFilters, setSearchFilters] = useState({
     first_name: "",
     last_name: "",
     email: "",
+    phone: "",
+    country: "",
+    gender: "",
   });
+  const [totalUsers, setTotalUsers] = useState(null); // null ilk başta
+  const perPage = 20;
 
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchUsers(currentPage);
     }, 500);
-
     return () => clearTimeout(timer);
   }, [currentPage, searchFilters]);
 
+  useEffect(() => {
+    fetchCount();
+  }, [token]);
+
   const fetchUsers = async (page) => {
-    let url = `${API_BASE_URL}/users?page=${page}&per_page=20`;
+    let url = `${API_BASE_URL}/users?page=${page}&per_page=${perPage}`;
     Object.keys(searchFilters).forEach((key) => {
       const value = searchFilters[key];
       if (value && value.trim() !== "") {
@@ -44,17 +49,39 @@ export default function Users() {
 
     if (res.ok) {
       setUsers(data.data || []);
-      setPagination(data);
     }
+  };
+
+  const fetchCount = async () => {
+    const res = await fetch(`${API_BASE_URL}/users/count`, {
+      method: "post",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    });
+    const count = await res.json();
+    setTotalUsers(Number(count));
+  };
+
+  const handleFilterChange = (field, value) => {
+    setSearchFilters((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   async function handleDeleteUser(userId, userName) {
     const confirmDelete = window.confirm(
       `Are you sure you want to delete ${userName} ?\n\nThis action cannot be undone.`
     );
-    if (!confirmDelete) {
-      return;
-    }
+    if (!confirmDelete) return;
 
     const res = await fetch(`${API_BASE_URL}/users/${userId}`, {
       method: "DELETE",
@@ -66,23 +93,17 @@ export default function Users() {
     });
 
     if (res.ok) {
-      fetchUsers(currentPage);
+      fetchUsers(currentPage).then(() => fetchCount());
     } else {
       const errorData = await res.json();
       alert(`Error deleting user: ${errorData.message || "Unknown error"}`);
     }
   }
 
-  const handleFilterChange = (field, value) => {
-    setSearchFilters((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  // Sayfa numarası hesaplama
+  const totalPages = totalUsers ? Math.ceil(totalUsers / perPage) : 1;
+  const from = (currentPage - 1) * perPage + 1;
+  const to = Math.min(currentPage * perPage, totalUsers || 0);
 
   return (
     <div className="container-fluid py-3">
@@ -97,7 +118,6 @@ export default function Users() {
             </div>
             <div className="col-md-6 col-12">
               <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-md-end">
-                {/* Add User Button */}
                 <Link
                   to="/users/create"
                   className="btn btn-success btn-sm mb-2 mb-md-0 mr-md-3"
@@ -113,7 +133,7 @@ export default function Users() {
         {/* 6 filtre inputu */}
         <div className="card-body border-bottom">
           <div className="row">
-            <div className="col-md-4">
+            <div className="col-md-2">
               <div className="form-group mb-2">
                 <label className="form-label small">First Name</label>
                 <input
@@ -127,7 +147,7 @@ export default function Users() {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-2">
               <div className="form-group mb-2">
                 <label className="form-label small">Last Name</label>
                 <input
@@ -141,7 +161,7 @@ export default function Users() {
                 />
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-2">
               <div className="form-group mb-2">
                 <label className="form-label small">Email</label>
                 <input
@@ -153,6 +173,46 @@ export default function Users() {
                 />
               </div>
             </div>
+            <div className="col-md-2">
+              <div className="form-group mb-2">
+                <label className="form-label small">Phone</label>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Phone"
+                  value={searchFilters.phone}
+                  onChange={(e) => handleFilterChange("phone", e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="form-group mb-2">
+                <label className="form-label small">Country</label>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Country"
+                  value={searchFilters.country}
+                  onChange={(e) =>
+                    handleFilterChange("country", e.target.value)
+                  }
+                />
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="form-group mb-2">
+                <label className="form-label small">Gender</label>
+                <select
+                  className="form-control form-control-sm"
+                  value={searchFilters.gender}
+                  onChange={(e) => handleFilterChange("gender", e.target.value)}
+                >
+                  <option value="">All</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -161,6 +221,7 @@ export default function Users() {
             <table className="table table-striped table-hover">
               <thead className="bg-light">
                 <tr>
+                  <th style={{ width: "5%" }}>#</th>
                   <th>First Name</th>
                   <th>Last Name</th>
                   <th>Email</th>
@@ -172,21 +233,14 @@ export default function Users() {
               </thead>
               <tbody>
                 {users.length > 0 ? (
-                  users.map((user) => (
+                  users.map((user, index) => (
                     <tr key={user.id}>
+                      <td>{(currentPage - 1) * perPage + 1 + index}</td>
                       <td>
-                        <div className="d-flex align-items-center">
-                          <div>
-                            <strong>{user.first_name}</strong>
-                          </div>
-                        </div>
+                        <strong>{user.first_name}</strong>
                       </td>
                       <td>
-                        <div className="d-flex align-items-center">
-                          <div>
-                            <strong>{user.last_name}</strong>
-                          </div>
-                        </div>
+                        <strong>{user.last_name}</strong>
                       </td>
                       <td>
                         <span className="text-primary">{user.email}</span>
@@ -259,102 +313,62 @@ export default function Users() {
           </div>
         </div>
 
-        {pagination && pagination.last_page > 1 && (
+        {/* Sayfalama */}
+        {totalUsers !== null && totalUsers > perPage && (
           <div className="card-footer">
             <div className="d-flex justify-content-between align-items-center">
               <div className="text-muted">
-                Showing {pagination.from} to {pagination.to} of{" "}
-                {pagination.total} entries
+                Showing {from} to {to} of {totalUsers} entries
               </div>
               <ul className="pagination pagination-sm m-0">
-                {/* Previous */}
                 <li
-                  className={`page-item${
-                    !pagination.prev_page_url ? " disabled" : ""
-                  }`}
+                  className={`page-item${currentPage === 1 ? " disabled" : ""}`}
                 >
                   <button
                     className="page-link"
-                    onClick={() =>
-                      pagination.prev_page_url &&
-                      handlePageChange(pagination.current_page - 1)
-                    }
-                    disabled={!pagination.prev_page_url}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
                   >
-                    &laquo; Previous
+                    &laquo;
                   </button>
                 </li>
-                {/* Sayfa numaraları (ilk 2, aktif, son 2 ve ... ile) */}
-                {pagination.current_page > 3 && (
-                  <>
-                    <li className="page-item">
-                      <button
-                        className="page-link"
-                        onClick={() => handlePageChange(1)}
-                      >
-                        1
-                      </button>
-                    </li>
-                    {pagination.current_page > 4 && (
-                      <li className="page-item disabled">
-                        <span className="page-link">...</span>
-                      </li>
-                    )}
-                  </>
-                )}
-                {Array.from({ length: 5 }, (_, i) => {
-                  const page = pagination.current_page - 2 + i;
-                  if (page > 0 && page <= pagination.last_page) {
-                    return (
-                      <li
-                        key={page}
-                        className={`page-item${
-                          pagination.current_page === page ? " active" : ""
-                        }`}
-                      >
-                        <button
-                          className="page-link"
-                          onClick={() => handlePageChange(page)}
-                        >
-                          {page}
-                        </button>
-                      </li>
-                    );
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let page = i + 1;
+                  if (currentPage > 3 && totalPages > 5) {
+                    if (currentPage >= totalPages - 2) {
+                      page = totalPages - 4 + i;
+                    } else {
+                      page = currentPage - 2 + i;
+                    }
                   }
-                  return null;
-                })}
-                {pagination.current_page < pagination.last_page - 2 && (
-                  <>
-                    {pagination.current_page < pagination.last_page - 3 && (
-                      <li className="page-item disabled">
-                        <span className="page-link">...</span>
-                      </li>
-                    )}
-                    <li className="page-item">
+                  if (page < 1 || page > totalPages) return null;
+                  return (
+                    <li
+                      key={page}
+                      className={`page-item${
+                        currentPage === page ? " active" : ""
+                      }`}
+                    >
                       <button
                         className="page-link"
-                        onClick={() => handlePageChange(pagination.last_page)}
+                        onClick={() => handlePageChange(page)}
                       >
-                        {pagination.last_page}
+                        {page}
                       </button>
                     </li>
-                  </>
-                )}
-                {/* Next */}
+                  );
+                })}
                 <li
                   className={`page-item${
-                    !pagination.next_page_url ? " disabled" : ""
+                    currentPage === totalPages ? " disabled" : ""
                   }`}
                 >
                   <button
                     className="page-link"
-                    onClick={() =>
-                      pagination.next_page_url &&
-                      handlePageChange(pagination.current_page + 1)
-                    }
-                    disabled={!pagination.next_page_url}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
                   >
-                    Next &raquo;
+                    &raquo;
                   </button>
                 </li>
               </ul>
