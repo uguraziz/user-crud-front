@@ -3,12 +3,11 @@ import { AppContext } from "../../Context/AppContext";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import API_BASE_URL from "../../Utils/api.js";
 
-
 export default function UserUpdate() {
   const { token } = useContext(AppContext);
   const navigate = useNavigate();
   const { id } = useParams();
-  
+
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -22,9 +21,9 @@ export default function UserUpdate() {
     district: "",
     address: "",
     postal_code: "",
-    currency: "USD"
+    currency: "USD",
   });
-  
+
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(true);
@@ -49,8 +48,10 @@ export default function UserUpdate() {
         const data = await res.json();
         const user = data.data;
         // Date format düzeltme (YYYY-MM-DD formatına çevir)
-        const dateOfBirth = user.date_of_birth ? user.date_of_birth.split('T')[0] : '';
-        
+        const dateOfBirth = user.date_of_birth
+          ? user.date_of_birth.split("T")[0]
+          : "";
+
         setFormData({
           first_name: user.first_name || "",
           last_name: user.last_name || "",
@@ -64,7 +65,8 @@ export default function UserUpdate() {
           district: user.district || "",
           address: user.address || "",
           postal_code: user.postal_code || "",
-          currency: user.currency || "USD"
+          currency: user.currency || "USD",
+          roles: user.roles || ["editor"],
         });
       } else if (res.status === 404) {
         setNotFound(true);
@@ -79,14 +81,14 @@ export default function UserUpdate() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
         [name]: null,
       }));
@@ -136,7 +138,8 @@ export default function UserUpdate() {
                 <i className="fas fa-user-times fa-5x text-muted mb-4"></i>
                 <h2 className="text-muted">User Not Found</h2>
                 <p className="lead text-muted mb-4">
-                  The user you are looking for does not exist or has been removed.
+                  The user you are looking for does not exist or has been
+                  removed.
                 </p>
                 <Link to="/users" className="btn btn-primary">
                   <i className="fas fa-arrow-left mr-2"></i>
@@ -206,7 +209,9 @@ export default function UserUpdate() {
                       </label>
                       <input
                         type="text"
-                        className={`form-control ${errors.first_name ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.first_name ? "is-invalid" : ""
+                        }`}
                         id="first_name"
                         name="first_name"
                         value={formData.first_name}
@@ -229,7 +234,9 @@ export default function UserUpdate() {
                       </label>
                       <input
                         type="text"
-                        className={`form-control ${errors.last_name ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.last_name ? "is-invalid" : ""
+                        }`}
                         id="last_name"
                         name="last_name"
                         value={formData.last_name}
@@ -252,7 +259,9 @@ export default function UserUpdate() {
                       </label>
                       <input
                         type="email"
-                        className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.email ? "is-invalid" : ""
+                        }`}
                         id="email"
                         name="email"
                         value={formData.email}
@@ -275,7 +284,9 @@ export default function UserUpdate() {
                       </label>
                       <input
                         type="text"
-                        className={`form-control ${errors.national_id ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.national_id ? "is-invalid" : ""
+                        }`}
                         id="national_id"
                         name="national_id"
                         value={formData.national_id}
@@ -298,7 +309,9 @@ export default function UserUpdate() {
                       </label>
                       <input
                         type="text"
-                        className={`form-control ${errors.phone ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.phone ? "is-invalid" : ""
+                        }`}
                         id="phone"
                         name="phone"
                         value={formData.phone}
@@ -311,6 +324,25 @@ export default function UserUpdate() {
                         </div>
                       )}
                     </div>
+                    <div className="form-group">
+                      <label htmlFor="currency">
+                        <i className="fas fa-money-bill mr-2 text-primary"></i>
+                        Currency
+                      </label>
+                      <select
+                        className="form-control"
+                        id="currency"
+                        name="currency"
+                        value={formData.currency}
+                        onChange={handleChange}
+                      >
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                        <option value="GBP">GBP</option>
+                        <option value="TRY">TRY</option>
+                        <option value="JPY">JPY</option>
+                      </select>
+                    </div>
                   </div>
 
                   {/* Sağ Kolon */}
@@ -322,7 +354,9 @@ export default function UserUpdate() {
                         Gender *
                       </label>
                       <select
-                        className={`form-control ${errors.gender ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.gender ? "is-invalid" : ""
+                        }`}
                         id="gender"
                         name="gender"
                         value={formData.gender}
@@ -349,7 +383,9 @@ export default function UserUpdate() {
                       </label>
                       <input
                         type="date"
-                        className={`form-control ${errors.date_of_birth ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.date_of_birth ? "is-invalid" : ""
+                        }`}
                         id="date_of_birth"
                         name="date_of_birth"
                         value={formData.date_of_birth}
@@ -371,7 +407,9 @@ export default function UserUpdate() {
                       </label>
                       <input
                         type="text"
-                        className={`form-control ${errors.country ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.country ? "is-invalid" : ""
+                        }`}
                         id="country"
                         name="country"
                         value={formData.country}
@@ -394,7 +432,9 @@ export default function UserUpdate() {
                       </label>
                       <input
                         type="text"
-                        className={`form-control ${errors.city ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.city ? "is-invalid" : ""
+                        }`}
                         id="city"
                         name="city"
                         value={formData.city}
@@ -415,7 +455,9 @@ export default function UserUpdate() {
                       </label>
                       <input
                         type="text"
-                        className={`form-control ${errors.district ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.district ? "is-invalid" : ""
+                        }`}
                         id="district"
                         name="district"
                         value={formData.district}
@@ -428,6 +470,23 @@ export default function UserUpdate() {
                           {errors.district[0]}
                         </div>
                       )}
+                    </div>
+                    <div className="form-group">
+                      <label>Role</label>
+                      <select
+                        className="form-control"
+                        name="roles"
+                        value={formData.roles[0] || ""}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            roles: [e.target.value],
+                          }))
+                        }
+                      >
+                        <option value="editor">Editor</option>
+                        <option value="admin">Admin</option>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -448,7 +507,9 @@ export default function UserUpdate() {
                         Full Address *
                       </label>
                       <textarea
-                        className={`form-control ${errors.address ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.address ? "is-invalid" : ""
+                        }`}
                         id="address"
                         name="address"
                         rows="3"
@@ -473,7 +534,9 @@ export default function UserUpdate() {
                       </label>
                       <input
                         type="text"
-                        className={`form-control ${errors.postal_code ? "is-invalid" : ""}`}
+                        className={`form-control ${
+                          errors.postal_code ? "is-invalid" : ""
+                        }`}
                         id="postal_code"
                         name="postal_code"
                         value={formData.postal_code}
@@ -487,34 +550,14 @@ export default function UserUpdate() {
                         </div>
                       )}
                     </div>
-
-                    <div className="form-group">
-                      <label htmlFor="currency">
-                        <i className="fas fa-money-bill mr-2 text-primary"></i>
-                        Currency
-                      </label>
-                      <select
-                        className="form-control"
-                        id="currency"
-                        name="currency"
-                        value={formData.currency}
-                        onChange={handleChange}
-                      >
-                        <option value="USD">USD</option>
-                        <option value="EUR">EUR</option>
-                        <option value="GBP">GBP</option>
-                        <option value="TRY">TRY</option>
-                        <option value="JPY">JPY</option>
-                      </select>
-                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Form Actions */}
               <div className="card-footer">
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="btn btn-warning text-white mr-3"
                   disabled={loading}
                 >

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import API_BASE_URL from "../../Utils/api.js";
 
 export default function Users() {
-  const { user, token } = useContext(AppContext);
+  const { user: currentUser, token } = useContext(AppContext);
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -287,7 +287,7 @@ export default function Users() {
                               <i className="fas fa-edit"></i>
                             </button>
                           </Link>
-                          {user.roles && user.roles.includes("admin") && (
+                          {currentUser.roles && currentUser.roles.includes("admin") && (
                             <button
                               className="btn btn-danger btn-sm"
                               title="Delete"
