@@ -1,26 +1,37 @@
 import { useState, useEffect, useContext } from "react";
 import { AppContext } from "../../Context/AppContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import API_BASE_URL from "../../Utils/api.js";
 
 export default function Users() {
   const { token } = useContext(AppContext);
   const [users, setUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({});
-  const navigate = useNavigate();
 
-  // Users API'den veriyi çek
-  useEffect(() => {
-    fetchUsers();
-  }, [currentPage, searchTerm]);
+  // filtre inputları için state
+  const [searchFilters, setSearchFilters] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+  });
 
-  const fetchUsers = async () => {
-    let url = `${API_BASE_URL}/users?page=${currentPage}`;
-    if (searchTerm) {
-      url += `&filter[search]=${encodeURIComponent(searchTerm)}`;
-    }
+   useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchUsers(currentPage);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [currentPage, searchFilters]);
+
+  const fetchUsers = async (page) => {
+    let url = `${API_BASE_URL}/users?page=${page}&per_page=20`;
+    Object.keys(searchFilters).forEach((key) => {
+      const value = searchFilters[key];
+      if (value && value.trim() !== "") {
+        url += `&filter[${key}]=${encodeURIComponent(value.trim())}`;
+      }
+    });
 
     const res = await fetch(url, {
       headers: {
@@ -55,17 +66,18 @@ export default function Users() {
     });
 
     if (res.ok) {
-      fetchUsers();
+      fetchUsers(currentPage);
     } else {
-      // Hata durumu
       const errorData = await res.json();
       alert(`Error deleting user: ${errorData.message || "Unknown error"}`);
     }
   }
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1); // Arama yapınca ilk sayfaya dön
+  const handleFilterChange = (field, value) => {
+    setSearchFilters((prev) => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   const handlePageChange = (page) => {
@@ -93,25 +105,48 @@ export default function Users() {
                   <i className="fas fa-plus mr-2"></i>
                   Add User
                 </Link>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                {/* Search Box */}
-                <div
-                  className="input-group input-group-sm"
-                  style={{ maxWidth: 300 }}
-                >
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Search users..."
-                    value={searchTerm}
-                    onChange={handleSearch}
-                  />
-                  <div className="input-group-append">
-                    <div className="input-group-text">
-                      <i className="fas fa-search"></i>
-                    </div>
-                  </div>
-                </div>
+        {/* 6 filtre inputu */}
+        <div className="card-body border-bottom">
+          <div className="row">
+            <div className="col-md-4">
+              <div className="form-group mb-2">
+                <label className="form-label small">First Name</label>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="First name"
+                  value={searchFilters.first_name}
+                  onChange={(e) => handleFilterChange("first_name", e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group mb-2">
+                <label className="form-label small">Last Name</label>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Last name"
+                  value={searchFilters.last_name}
+                  onChange={(e) => handleFilterChange("last_name", e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="form-group mb-2">
+                <label className="form-label small">Email</label>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Email"
+                  value={searchFilters.email}
+                  onChange={(e) => handleFilterChange("email", e.target.value)}
+                />
               </div>
             </div>
           </div>
@@ -122,29 +157,30 @@ export default function Users() {
             <table className="table table-striped table-hover">
               <thead className="bg-light">
                 <tr>
-                  <th style={{ width: "5%" }}>#</th>
-                  <th>Name</th>
+                  <th>First Name</th>
+                  <th>Last Name</th>
                   <th>Email</th>
                   <th>Phone</th>
                   <th>Country</th>
                   <th>Gender</th>
-                  <th>Role</th>
                   <th style={{ width: "15%" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {users.length > 0 ? (
-                  users.map((user, index) => (
+                  users.map((user) => (
                     <tr key={user.id}>
-                      <td>{pagination.from + index}</td>
                       <td>
                         <div className="d-flex align-items-center">
                           <div>
-                            <strong>{user.full_name}</strong>
-                            <br />
-                            <small className="text-muted">
-                              ID: {user.national_id}
-                            </small>
+                            <strong>{user.first_name}</strong>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className="d-flex align-items-center">
+                          <div>
+                            <strong>{user.last_name}</strong>
                           </div>
                         </div>
                       </td>
@@ -174,18 +210,6 @@ export default function Users() {
                         >
                           {user.gender}
                         </span>
-                      </td>
-                      <td>
-                        {user.roles &&
-                          user.roles.length > 0 &&
-                          user.roles.map((role, idx) => (
-                            <span
-                              key={idx}
-                              className="badge badge-success mr-1"
-                            >
-                              {role}
-                            </span>
-                          ))}
                       </td>
                       <td>
                         <div className="btn-group btn-group-sm">
