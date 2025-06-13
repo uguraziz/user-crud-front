@@ -16,7 +16,7 @@ export default function Users() {
     email: "",
   });
 
-   useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
       fetchUsers(currentPage);
     }, 500);
@@ -44,7 +44,7 @@ export default function Users() {
 
     if (res.ok) {
       setUsers(data.data || []);
-      setPagination(data.meta || {});
+      setPagination(data);
     }
   };
 
@@ -76,7 +76,7 @@ export default function Users() {
   const handleFilterChange = (field, value) => {
     setSearchFilters((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -121,7 +121,9 @@ export default function Users() {
                   className="form-control form-control-sm"
                   placeholder="First name"
                   value={searchFilters.first_name}
-                  onChange={(e) => handleFilterChange("first_name", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("first_name", e.target.value)
+                  }
                 />
               </div>
             </div>
@@ -133,7 +135,9 @@ export default function Users() {
                   className="form-control form-control-sm"
                   placeholder="Last name"
                   value={searchFilters.last_name}
-                  onChange={(e) => handleFilterChange("last_name", e.target.value)}
+                  onChange={(e) =>
+                    handleFilterChange("last_name", e.target.value)
+                  }
                 />
               </div>
             </div>
@@ -255,7 +259,7 @@ export default function Users() {
           </div>
         </div>
 
-        {pagination.last_page > 1 && (
+        {pagination && pagination.last_page > 1 && (
           <div className="card-footer">
             <div className="d-flex justify-content-between align-items-center">
               <div className="text-muted">
@@ -263,19 +267,25 @@ export default function Users() {
                 {pagination.total} entries
               </div>
               <ul className="pagination pagination-sm m-0">
+                {/* Previous */}
                 <li
-                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                  className={`page-item${
+                    !pagination.prev_page_url ? " disabled" : ""
+                  }`}
                 >
                   <button
                     className="page-link"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
+                    onClick={() =>
+                      pagination.prev_page_url &&
+                      handlePageChange(pagination.current_page - 1)
+                    }
+                    disabled={!pagination.prev_page_url}
                   >
-                    « Previous
+                    &laquo; Previous
                   </button>
                 </li>
-
-                {currentPage > 3 && (
+                {/* Sayfa numaraları (ilk 2, aktif, son 2 ve ... ile) */}
+                {pagination.current_page > 3 && (
                   <>
                     <li className="page-item">
                       <button
@@ -285,22 +295,21 @@ export default function Users() {
                         1
                       </button>
                     </li>
-                    {currentPage > 4 && (
+                    {pagination.current_page > 4 && (
                       <li className="page-item disabled">
                         <span className="page-link">...</span>
                       </li>
                     )}
                   </>
                 )}
-
-                {[...Array(5)].map((_, index) => {
-                  const page = currentPage - 2 + index;
+                {Array.from({ length: 5 }, (_, i) => {
+                  const page = pagination.current_page - 2 + i;
                   if (page > 0 && page <= pagination.last_page) {
                     return (
                       <li
                         key={page}
-                        className={`page-item ${
-                          currentPage === page ? "active" : ""
+                        className={`page-item${
+                          pagination.current_page === page ? " active" : ""
                         }`}
                       >
                         <button
@@ -314,10 +323,9 @@ export default function Users() {
                   }
                   return null;
                 })}
-
-                {currentPage < pagination.last_page - 2 && (
+                {pagination.current_page < pagination.last_page - 2 && (
                   <>
-                    {currentPage < pagination.last_page - 3 && (
+                    {pagination.current_page < pagination.last_page - 3 && (
                       <li className="page-item disabled">
                         <span className="page-link">...</span>
                       </li>
@@ -332,18 +340,21 @@ export default function Users() {
                     </li>
                   </>
                 )}
-
+                {/* Next */}
                 <li
-                  className={`page-item ${
-                    currentPage === pagination.last_page ? "disabled" : ""
+                  className={`page-item${
+                    !pagination.next_page_url ? " disabled" : ""
                   }`}
                 >
                   <button
                     className="page-link"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === pagination.last_page}
+                    onClick={() =>
+                      pagination.next_page_url &&
+                      handlePageChange(pagination.current_page + 1)
+                    }
+                    disabled={!pagination.next_page_url}
                   >
-                    Next »
+                    Next &raquo;
                   </button>
                 </li>
               </ul>
